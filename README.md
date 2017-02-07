@@ -28,13 +28,16 @@ Features
 
 MQTT Message Format
 --------
-rgb(r,g,b)              - rbg(0,0,0) for black or rbg(255,255,255) white
-power:x                 - x=0 off x=1 on
-solidcolor:r:x:g:y:b:z  - other RGB format x, y, z are the RGB values
-pattern:x               - 1-9 for the animation patterns
-brightness:x            - x is the value for brightness (0-255)
-brightnessAdjust:x      - x=0 =\> up x=1 =\> down
-patternAdjust:x         - x=0 =\> up x=1 =\> down
+
+Command                | Description
+---------------------- | ----------------------------------------------------
+rgb(r,g,b)             | rbg(0,0,0) for black or rbg(255,255,255) white
+power:x                | x=0 off x=1 on
+solidcolor:r:x:g:y:b:z | other RGB format x, y, z are the RGB values
+pattern:x              | 1-9 for the animation patterns
+brightness:x           | x is the value for brightness (0-255)
+brightnessAdjust:x     | x=0 =\> up x=1 =\> down
+patternAdjust:x        | x=0 =\> up x=1 =\> down
 
 
 
