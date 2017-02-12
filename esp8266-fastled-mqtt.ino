@@ -113,9 +113,10 @@ void setup(void) {
   Serial.begin(115200);
   delay(100);
   //Serial.setDebugOutput(true);
-  initFastLED();
   EEPROM.begin(512);
   loadSettings();
+  initFastLED();
+
   logSys();
 
   initWlan();
