@@ -8,7 +8,12 @@ void initFastLED(void) {
   FastLED.setBrightness(brightness);
   FastLED.setMaxPowerInVoltsAndMilliamps(5, MILLI_AMPS);
   //TODO on 160Hz the LED's are full white! Why?
-  fill_solid(leds, NUM_LEDS, solidColor);
+  if(power == 1 && currentPatternIndex == patternCount - 1) {
+    fill_solid(leds, NUM_LEDS, solidColor);  
+  }else {
+    fill_solid(leds, NUM_LEDS, CRGB::Black);  
+  }
+  
   FastLED.show();
 }
 
@@ -33,6 +38,7 @@ void loadSettings()
   {
     solidColor = CRGB(r, g, b);
   }
+  power = EEPROM.read(5);
 }
 
 void logSys() {
@@ -61,7 +67,7 @@ void initWlan() {
     String macID = String(mac[WL_MAC_ADDR_LENGTH - 2], HEX) +
                    String(mac[WL_MAC_ADDR_LENGTH - 1], HEX);
     macID.toUpperCase();
-    String AP_NameString = "ESP8266 Thing " + macID;
+    String AP_NameString = "ESP8266 Two " + macID;
 
     char AP_NameChar[AP_NameString.length() + 1];
     memset(AP_NameChar, 0, AP_NameString.length() + 1);
@@ -72,7 +78,6 @@ void initWlan() {
     WiFi.softAP(AP_NameChar, WiFiAPPSK);
 
     Serial.printf("Connect to Wi-Fi access point: %s\n", AP_NameChar);
-    Serial.println("and open http://192.168.4.1 in your browser");
   }
   else
   {

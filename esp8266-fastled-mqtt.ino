@@ -273,6 +273,9 @@ void reconnectMqtt() {
 void setPower(uint8_t value)
 {
   power = value == 0 ? 0 : 1;
+  EEPROM.write(5, power);
+  EEPROM.commit();
+  
 }
 
 void setSolidColor(CRGB color)
