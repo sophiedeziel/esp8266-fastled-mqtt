@@ -102,6 +102,7 @@ PatternAndNameList patterns = {
   { sinelon, "Sinelon" },
   { juggle, "Juggle" },
   { bpm, "BPM" },
+  { fire, "Fire" },
   { showSolidColor, "Solid Color" },
 };
 const uint8_t patternCount = ARRAY_SIZE(patterns);
@@ -215,7 +216,7 @@ void loop(void) {
   if (power == 0) {
     fill_solid(leds, NUM_LEDS, CRGB::Black);
     FastLED.show();
-    FastLED.delay(15);
+    delay(15);
     return;
   }
 
@@ -249,7 +250,7 @@ void loop(void) {
   FastLED.show();
 
   // insert a delay to keep the framerate modest
-  FastLED.delay(1000 / FRAMES_PER_SECOND);
+  delay(1000 / FRAMES_PER_SECOND);
 }
 
 

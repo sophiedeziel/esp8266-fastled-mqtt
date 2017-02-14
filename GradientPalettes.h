@@ -498,6 +498,20 @@ DEFINE_GRADIENT_PALETTE( Blue_Cyan_Yellow_gp ) {
   255, 255, 255,  0
 };
 
+// Gradient palette "fire", originally from
+// http://soliton.vm.bytemark.co.uk/pub/cpt-city/neota/elem/tn/fire.png.index.html
+// converted for FastLED with gammas (2.6, 2.2, 2.5)
+// Size: 28 bytes of program space.
+DEFINE_GRADIENT_PALETTE( gp_fire ) {
+    0,   1,  1,  0,
+   20,  32,  5,  0,
+  60, 192, 24,  0,
+  100, 220,105,  5,
+  240, 252,255, 31,
+  250, 252,255,111,
+  255, 255,255,255};
+ 
+
 
 // Single array of defined cpt-city color palettes.
 // This will let us programmatically choose one based on
@@ -542,7 +556,8 @@ const TProgmemRGBGradientPalettePtr gGradientPalettes[] = {
   BlacK_Blue_Magenta_White_gp,
   BlacK_Magenta_Red_gp,
   BlacK_Red_Magenta_Yellow_gp,
-  Blue_Cyan_Yellow_gp
+  Blue_Cyan_Yellow_gp,
+  gp_fire
 };
 
 
