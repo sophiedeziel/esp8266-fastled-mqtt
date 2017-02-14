@@ -206,6 +206,7 @@ void callback(char* topic, byte* payload, unsigned int length) {
 
 
 void loop(void) {
+  yield(); // Avoid crashes on ESP8266
   // Add entropy to random number generator; we use a lot of it.
   random16_add_entropy(random(65535));
   if (!client.connected()) {
