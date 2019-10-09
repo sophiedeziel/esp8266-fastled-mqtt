@@ -25,6 +25,7 @@ Features
 * Change the display pattern
 * Adjust the color
 * Control it via MQTT
+* Combinable with Amazon Alexa Skill via https://github.com/awilhelmer/alexa-mqtt-skill
 
 MQTT Message Format
 --------
