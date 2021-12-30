@@ -16,6 +16,12 @@
    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+/*
+ * Pour mon setup avec un wemos mini:
+ * Type de carte: LOLIN(WEMOS) D1 R2 & Mini
+ * Upload speed: 921600
+*/
+
 
 // TODO Flickering LED's ... https://github.com/FastLED/FastLED/issues/394 or https://github.com/FastLED/FastLED/issues/306
 #define FASTLED_ALLOW_INTERRUPTS 0
@@ -24,12 +30,8 @@
 #include "FastLED.h"
 FASTLED_USING_NAMESPACE
 
-extern "C" {
-#include "user_interface.h"
-}
-
 #include <ESP8266WiFi.h>
-#include <WiFiClientSecure.h> // Only use it with SSL on MQTT Broker
+#include <ArduinoJson.h>
 #include <EEPROM.h>
 #include <PubSubClient.h>
 #include "GradientPalettes.h"
@@ -71,13 +73,13 @@ uint8_t autoPlayDurationSeconds = 10;
 unsigned int autoPlayTimeout = 0;
 
 uint8_t gHue = 0; // rotating "base color" used by many of the patterns
-
-CRGB solidColor = CRGB::Black;
-
+//
+CRGB solidColor = CRGB::White;
+//
 uint8_t power = 1;
 
 // Mqtt Vars
-WiFiClientSecure espClient;
+WiFiClient espClient;
 PubSubClient client(espClient);
 
 
@@ -115,20 +117,30 @@ void setup(void) {
   delay(100);
   //Serial.setDebugOutput(true);
   EEPROM.begin(512);
-  loadSettings();
+//  loadSettings();
   initFastLED();
-
+//
   logSys();
 
-  initWlan();
 
-  // Only to validate certs if u have problems ...
-  // verifytls();
+  Serial.printf("Connecting to %s\n", ssid);
+  if (String(WiFi.SSID()) != String(ssid)) {
+    WiFi.begin(ssid, password);
+  }
 
-  //Mqtt Init
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    Serial.print(".");
+  }
+
+  Serial.print("Connected! With IP ");
+  Serial.print(WiFi.localIP());
+  Serial.println(" have FUN :) ");
+
+  //  Mqtt Init
   client.setServer(mqtt_server, mqtt_port);
   client.setCallback(callback);
-  autoPlayTimeout = millis() + (autoPlayDurationSeconds * 1000);
+  //autoPlayTimeout = millis() + (autoPlayDurationSeconds * 1000);
 }
 
 // Format is: command:value
@@ -143,64 +155,73 @@ void callback(char* topic, byte* payload, unsigned int length) {
 
   Serial.printf("Received Data from Topic: %s", data.c_str());
   Serial.println();
-  if ( data.length() > 0) {
-
-    if (data.startsWith("rgb(")) {
-      data.replace("rgb(","");
-      String r =  getValue(data, ',', 0);
-      String g =  getValue(data, ',', 1);
-
-      String b =  getValue(data, ',', 2);
-      b.replace("hallo","");
-      Serial.printf("Received R: %s G: %s B: %s", r.c_str(), g.c_str(), b.c_str());
-      Serial.println();
-      
-      if (r.length() > 0 && g.length() > 0 && b.length() > 0) {
-        setSolidColor(r.toInt(), g.toInt(), b.toInt());
-      }
-    }else {
-      String command =  getValue(data, ':', 0);
-      String value = getValue(data, ':', 1);
-  
-      if (command.length() > 0) {
-  
-        if (command.equals("power")) {
-          if (isValidNumber(value)) {
-            setPower(value.toInt());
-          }
-        } else if (command.equals("solidcolor")) {
-          String r =  getValue(data, ':', 2);
-          String g =  getValue(data, ':', 4);
-          String b =  getValue(data, ':', 6);
-          Serial.printf("Received R: %s G: %s B: %s", r.c_str(), g.c_str(), b.c_str());
-          Serial.println();
-          if (r.length() > 0 && g.length() > 0 && b.length() > 0) {
-            setSolidColor(r.toInt(), g.toInt(), b.toInt());
-          }
-        } else if (command.equals("pattern")) {
-          if (isValidNumber(value)) {
-            setPattern(value.toInt());
-          }
-        } else if (command.equals("brightness")) {
-          if (isValidNumber(value)) {
-            setBrightness(value.toInt());
-          }
-        } else if (command.equals("brightnessAdjust")) {
-          if (isValidNumber(value)) {
-            adjustBrightness(value.toInt() == 0 ? false : true);
-          }
-        } else if (command.equals("patternAdjust")) {
-          if (isValidNumber(value)) {
-            adjustPattern(value.toInt() == 0 ? false : true);
-          }
-        }
-      }
-    }
-    
-   
-  }
+//  if ( data.length() > 0) {
+//
+//    if (data.startsWith("rgb(")) {
+//      data.replace("rgb(","");
+//      String r =  getValue(data, ',', 0);
+//      String g =  getValue(data, ',', 1);
+//
+//      String b =  getValue(data, ',', 2);
+//      b.replace("hallo","");
+//      Serial.printf("Received R: %s G: %s B: %s", r.c_str(), g.c_str(), b.c_str());
+//      Serial.println();
+//      
+//      if (r.length() > 0 && g.length() > 0 && b.length() > 0) {
+//        setSolidColor(r.toInt(), g.toInt(), b.toInt());
+//      }
+//    }else {
+//      String command =  getValue(data, ':', 0);
+//      String value = getValue(data, ':', 1);
+//  
+//      if (command.length() > 0) {
+//  
+//        if (command.equals("power")) {
+//          if (isValidNumber(value)) {
+//            //setPower(value.toInt());
+//          }
+//        } else if (command.equals("solidcolor")) {
+//          String r =  getValue(data, ':', 2);
+//          String g =  getValue(data, ':', 4);
+//          String b =  getValue(data, ':', 6);
+//          Serial.printf("Received R: %s G: %s B: %s", r.c_str(), g.c_str(), b.c_str());
+//          Serial.println();
+//          if (r.length() > 0 && g.length() > 0 && b.length() > 0) {
+//            setSolidColor(r.toInt(), g.toInt(), b.toInt());
+//          }
+//        } else if (command.equals("pattern")) {
+//          if (isValidNumber(value)) {
+//            setPattern(value.toInt());
+//          }
+//        } else if (command.equals("brightness")) {
+//          if (isValidNumber(value)) {
+//            setBrightness(value.toInt());
+//          }
+//        } else if (command.equals("brightnessAdjust")) {
+//          if (isValidNumber(value)) {
+//            adjustBrightness(value.toInt() == 0 ? false : true);
+//          }
+//        } else if (command.equals("patternAdjust")) {
+//          if (isValidNumber(value)) {
+//            adjustPattern(value.toInt() == 0 ? false : true);
+//          }
+//        }
+//      }
+//    }
+//    
+//   
+//  }
   Serial.println("Finished Topic Data ...");
 
+}
+
+void sendDiscoveryTopic(){
+  Serial.println("Sending config");
+  char configMessage[200];
+  char configTopic[50];
+  sprintf(configMessage,"{ \"name\": \"%s\", \"unique_id\": \"%s\", \"cmd_t\": \"%s\", \"schema\": \"json\", \"effect_list\": [\"Color Loop\", \"Rainbow\"], \"brightness\":true, \"effect\":true }", mqtt_name, mqtt_clientid, mqtt_set_topic);
+  sprintf(configTopic, "homeassistant/light/%s/config", mqtt_clientid);
+  client.publish(configTopic, configMessage);
 }
 
 
@@ -214,12 +235,18 @@ void loop(void) {
   }
   client.loop();
 
-  if (power == 0) {
-    fill_solid(leds, NUM_LEDS, CRGB::Black);
-    FastLED.show();
-    delay(15);
-    return;
-  }
+  rainbow();
+
+ // if (power == 0) {
+  //  fill_solid(leds, NUM_LEDS, CRGB::RED);
+  //  FastLED.show();
+  //  delay(15);
+  //  return;
+ // }
+
+ //   setSolidColor(255, 255,0);
+ //FastLED.show();
+ 
 
   // EVERY_N_SECONDS(10) {
   //   Serial.print( F("Heap: ") ); Serial.println(system_get_free_heap_size());
@@ -228,25 +255,25 @@ void loop(void) {
   EVERY_N_MILLISECONDS( 20 ) {
     gHue++;  // slowly cycle the "base color" through the rainbow
   }
-
-  // change to a new cpt-city gradient palette
-  EVERY_N_SECONDS( SECONDS_PER_PALETTE ) {
-    gCurrentPaletteNumber = addmod8( gCurrentPaletteNumber, 1, gGradientPaletteCount);
-    gTargetPalette = gGradientPalettes[ gCurrentPaletteNumber ];
-  }
-
-  // slowly blend the current cpt-city gradient palette to the next
-  EVERY_N_MILLISECONDS(40) {
-    nblendPaletteTowardPalette( gCurrentPalette, gTargetPalette, 16);
-  }
-
-  if (autoplayEnabled && millis() > autoPlayTimeout) {
-    adjustPattern(true);
-    autoPlayTimeout = millis() + (autoPlayDurationSeconds * 1000);
-  }
+//
+//  // change to a new cpt-city gradient palette
+//  EVERY_N_SECONDS( SECONDS_PER_PALETTE ) {
+//    gCurrentPaletteNumber = addmod8( gCurrentPaletteNumber, 1, gGradientPaletteCount);
+//    gTargetPalette = gGradientPalettes[ gCurrentPaletteNumber ];
+//  }
+//
+//  // slowly blend the current cpt-city gradient palette to the next
+//  EVERY_N_MILLISECONDS(40) {
+//    nblendPaletteTowardPalette( gCurrentPalette, gTargetPalette, 16);
+//  }
+//
+//  if (autoplayEnabled && millis() > autoPlayTimeout) {
+//    adjustPattern(true);
+//    autoPlayTimeout = millis() + (autoPlayDurationSeconds * 1000);
+//  }
 
   // Call the current pattern function once, updating the 'leds' array
-  patterns[currentPatternIndex].pattern();
+  //patterns[currentPatternIndex].pattern();
 
   FastLED.show();
 
@@ -260,7 +287,8 @@ void reconnectMqtt() {
     Serial.println("Attempting MQTT connection...");
     if (client.connect(mqtt_clientid, mqtt_user, mqtt_password)) {
       Serial.println("connected");
-      client.subscribe(mqtt_topic);
+      client.subscribe(mqtt_set_topic);
+      sendDiscoveryTopic();
     } else {
       Serial.print("failed, rc=");
       Serial.print(client.state());
@@ -272,13 +300,13 @@ void reconnectMqtt() {
 }
 
 
-void setPower(uint8_t value)
-{
-  power = value == 0 ? 0 : 1;
-  EEPROM.write(5, power);
-  EEPROM.commit();
-  
-}
+//void setPower(uint8_t value)
+//{
+//  power = value == 0 ? 0 : 1;
+//  EEPROM.write(5, power);
+//  EEPROM.commit();
+//  
+//}
 
 void setSolidColor(CRGB color)
 {
@@ -296,24 +324,24 @@ void setSolidColor(uint8_t r, uint8_t g, uint8_t b)
   setPattern(patternCount - 1);
 }
 
-// increase or decrease the current pattern number, and wrap around at theends
-void adjustPattern(bool up)
-{
-  if (up)
-    currentPatternIndex++;
-  else
-    currentPatternIndex--;
-
-  // wrap around at the ends
-  if (currentPatternIndex < 0)
-    currentPatternIndex = patternCount - 1;
-  if (currentPatternIndex >= patternCount)
-    currentPatternIndex = 0;
-
-  EEPROM.write(1, currentPatternIndex);
-  EEPROM.commit();
-}
-
+//// increase or decrease the current pattern number, and wrap around at theends
+//void adjustPattern(bool up)
+//{
+//  if (up)
+//    currentPatternIndex++;
+//  else
+//    currentPatternIndex--;
+//
+//  // wrap around at the ends
+//  if (currentPatternIndex < 0)
+//    currentPatternIndex = patternCount - 1;
+//  if (currentPatternIndex >= patternCount)
+//    currentPatternIndex = 0;
+//
+//  EEPROM.write(1, currentPatternIndex);
+//  EEPROM.commit();
+//}
+//
 void setPattern(int value)
 {
   // don't wrap around at the ends
@@ -327,59 +355,59 @@ void setPattern(int value)
   EEPROM.write(1, currentPatternIndex);
   EEPROM.commit();
 }
-
-// adjust the brightness, and wrap around at the ends
-void adjustBrightness(bool up)
-{
-  if (up)
-    brightnessIndex++;
-  else
-    brightnessIndex--;
-
-  // wrap around at the ends
-  if (brightnessIndex < 0)
-    brightnessIndex = brightnessCount - 1;
-  else if (brightnessIndex >= brightnessCount)
-    brightnessIndex = 0;
-
-  brightness = brightnessMap[brightnessIndex];
-
-  FastLED.setBrightness(brightness);
-
-  EEPROM.write(0, brightness);
-  EEPROM.commit();
-}
-
-void setBrightness(int value)
-{
-  // don't wrap around at the ends
-  if (value > 255)
-    value = 255;
-  else if (value < 0) value = 0;
-
-  brightness = value;
-
-  FastLED.setBrightness(brightness);
-
-  EEPROM.write(0, brightness);
-  EEPROM.commit();
-}
-
-String getValue(String data, char separator, int index)
-{
-  int found = 0;
-  int strIndex[] = { 0, -1 };
-  int maxIndex = data.length() - 1;
-
-  for (int i = 0; i <= maxIndex && found <= index; i++) {
-    if (data.charAt(i) == separator || i == maxIndex) {
-      found++;
-      strIndex[0] = strIndex[1] + 1;
-      strIndex[1] = (i == maxIndex) ? i + 1 : i;
-    }
-  }
-  return found > index ? data.substring(strIndex[0], strIndex[1]) : "";
-}
+//
+//// adjust the brightness, and wrap around at the ends
+//void adjustBrightness(bool up)
+//{
+//  if (up)
+//    brightnessIndex++;
+//  else
+//    brightnessIndex--;
+//
+//  // wrap around at the ends
+//  if (brightnessIndex < 0)
+//    brightnessIndex = brightnessCount - 1;
+//  else if (brightnessIndex >= brightnessCount)
+//    brightnessIndex = 0;
+//
+//  brightness = brightnessMap[brightnessIndex];
+//
+//  FastLED.setBrightness(brightness);
+//
+//  EEPROM.write(0, brightness);
+//  EEPROM.commit();
+//}
+//
+//void setBrightness(int value)
+//{
+//  // don't wrap around at the ends
+//  if (value > 255)
+//    value = 255;
+//  else if (value < 0) value = 0;
+//
+//  brightness = value;
+//
+//  FastLED.setBrightness(brightness);
+//
+//  EEPROM.write(0, brightness);
+//  EEPROM.commit();
+//}
+//
+//String getValue(String data, char separator, int index)
+//{
+//  int found = 0;
+//  int strIndex[] = { 0, -1 };
+//  int maxIndex = data.length() - 1;
+//
+//  for (int i = 0; i <= maxIndex && found <= index; i++) {
+//    if (data.charAt(i) == separator || i == maxIndex) {
+//      found++;
+//      strIndex[0] = strIndex[1] + 1;
+//      strIndex[1] = (i == maxIndex) ? i + 1 : i;
+//    }
+//  }
+//  return found > index ? data.substring(strIndex[0], strIndex[1]) : "";
+//}
 
 
 boolean isValidNumber(String str) {
