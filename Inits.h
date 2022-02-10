@@ -2,7 +2,7 @@
 
 
 void initFastLED(void) {
-  FastLED.addLeds<LED_TYPE, DATA_PIN, COLOR_ORDER>(leds, NUM_LEDS).setCorrection(TypicalLEDStrip);
+  FastLED.addLeds<LED_TYPE, DATA_PIN, CLK_PIN, COLOR_ORDER>(leds, NUM_LEDS).setCorrection(TypicalLEDStrip);
   FastLED.setBrightness(100);
   //TODO on 160Hz the LED's are full white! Why?
 //  if(power == 1 && currentPatternIndex == patternCount - 1) {

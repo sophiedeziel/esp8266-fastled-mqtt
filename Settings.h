@@ -7,10 +7,10 @@ const char WiFiAPPSK[] = "";
 const char* ssid = "";
 const char* password = "";
 
-
-#define DATA_PIN      D5     // for Huzzah: Pins w/o special function:  #4,#5, #12, #13, #14; // #16 does not work :(
-#define LED_TYPE      WS2813
-#define COLOR_ORDER   GRB
+#define DATA_PIN      D5
+#define CLK_PIN       D4   
+#define LED_TYPE      SK9822
+#define COLOR_ORDER   BGR
 #define NUM_LEDS      20
 
 #define MILLI_AMPS         500     // IMPORTANT: set here the maxmilli-Amps of your power supply 5V 2A = 2000
@@ -21,10 +21,10 @@ const char* mqtt_server = "10.0.1.7";
 const int mqtt_port = 1883;
 const char* mqtt_user = "technopolisha";
 const char* mqtt_password = "unchatdanslo";
-const char* mqtt_set_topic = "lampe_led/1/set";
-const char* mqtt_state_topic = "lampe_led/1/state";
-const char* mqtt_clientid = "lampe_led/1";
-const char* mqtt_name = "Lampe LED géante 1";
+const char* mqtt_set_topic = "lampe_led/5/set";
+const char* mqtt_state_topic = "lampe_led/5/state";
+const char* mqtt_clientid = "lampe_led/5";
+const char* mqtt_name = "Lampe LED géante";
 
 
 // openssl x509 -fingerprint -in  mqttserver.crt - Only if you must verify your certs for connection issues with MQTT
