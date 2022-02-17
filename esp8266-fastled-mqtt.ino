@@ -160,94 +160,46 @@ void callback(char* topic, byte* payload, unsigned int length) {
   DynamicJsonDocument doc(1024);
   deserializeJson(doc, tmp);
   
-if ( data.length() > 0) {
-  const char* state = doc["state"];
-  int brightness = doc["brightness"] | -1;
-  const char* effect = doc["effect"] | "";
-  Serial.println(state);
-
-  if (String(state) == "OFF") {
-    setPower(0);
-  } else if (String(state) == "ON") {
-    setPower(1);
-  } else {
-    Serial.println("Invalid state");
-  }
-
-  if (brightness >= 0) {
-    setBrightness(brightness);
-  }
-
-  if (effect != "") {
-    Serial.println(effect);
-    for (int i = 0; i < patternCount; i++) {
-      if ( patterns[i].name.equals(effect)) {
-        setPattern(i);
-        break;
-      }
-    }
-  } else {
-    Serial.println("No effect");
-  }
+  if ( data.length() > 0) {
+    const char* state = doc["state"];
+    int brightness = doc["brightness"] | -1;
+    const char* effect = doc["effect"] | "";
+    JsonObject color = doc["color"];
+    Serial.println(state);
   
-}
-//
-//    if (data.startsWith("rgb(")) {
-//      data.replace("rgb(","");
-//      String r =  getValue(data, ',', 0);
-//      String g =  getValue(data, ',', 1);
-//
-//      String b =  getValue(data, ',', 2);
-//      b.replace("hallo","");
-//      Serial.printf("Received R: %s G: %s B: %s", r.c_str(), g.c_str(), b.c_str());
-//      Serial.println();
-//      
-//      if (r.length() > 0 && g.length() > 0 && b.length() > 0) {
-//        setSolidColor(r.toInt(), g.toInt(), b.toInt());
-//      }
-//    }else {
-//      String command =  getValue(data, ':', 0);
-//      String value = getValue(data, ':', 1);
-//  
-//      if (command.length() > 0) {
-//  
-//        if (command.equals("power")) {
-//          if (isValidNumber(value)) {
-//            //setPower(value.toInt());
-//          }
-//        } else if (command.equals("solidcolor")) {
-//          String r =  getValue(data, ':', 2);
-//          String g =  getValue(data, ':', 4);
-//          String b =  getValue(data, ':', 6);
-//          Serial.printf("Received R: %s G: %s B: %s", r.c_str(), g.c_str(), b.c_str());
-//          Serial.println();
-//          if (r.length() > 0 && g.length() > 0 && b.length() > 0) {
-//            setSolidColor(r.toInt(), g.toInt(), b.toInt());
-//          }
-//        } else if (command.equals("pattern")) {
-//          if (isValidNumber(value)) {
-//            setPattern(value.toInt());
-//          }
-//        } else if (command.equals("brightness")) {
-//          if (isValidNumber(value)) {
-//            setBrightness(value.toInt());
-//          }
-//        } else if (command.equals("brightnessAdjust")) {
-//          if (isValidNumber(value)) {
-//            adjustBrightness(value.toInt() == 0 ? false : true);
-//          }
-//        } else if (command.equals("patternAdjust")) {
-//          if (isValidNumber(value)) {
-//            adjustPattern(value.toInt() == 0 ? false : true);
-//          }
-//        }
-//      }
-//    }
-//    
-//   
-//  }
+    if (String(state) == "OFF") {
+      setPower(0);
+    } else if (String(state) == "ON") {
+      setPower(1);
+    } else {
+      Serial.println("Invalid state");
+    }
+  
+    if (brightness >= 0) {
+      setBrightness(brightness);
+    }
+  
+    if (effect != "") {
+      Serial.println(effect);
+      for (int i = 0; i < patternCount; i++) {
+        if ( patterns[i].name.equals(effect)) {
+          setPattern(i);
+          break;
+        }
+      }
+    } else {
+      Serial.println("No effect");
+    }
+  
+    if (!color.isNull()) {
+      int r = color["r"];
+      int g = color["g"];
+      int b = color["b"];
+  
+      setSolidColor(r,g,b);
+    }
+  }
   Serial.println("Finished Topic Data ...");
-
 }
 
 void sendDiscoveryTopic(){
